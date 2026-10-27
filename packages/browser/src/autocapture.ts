@@ -772,9 +772,15 @@ export class Autocapture implements Extension {
                 !target.querySelector('.ph-no-capture, .ph-sensitive')
             ) {
                 const allowlist = config.capture_value_css_selector_allowlist ?? DEFAULT_INPUT_TEXT_ALLOWLIST
-                const captureValue = isFunction(allowlist)
-                    ? allowlist(target)
-                    : isArray(allowlist) && allowlist.some((selector) => elementMatchesCSSSelector(target, selector))
+                let captureValue = false
+                try {
+                    captureValue = isFunction(allowlist)
+                        ? !!allowlist(target)
+                        : isArray(allowlist) &&
+                          allowlist.some((selector) => elementMatchesCSSSelector(target, selector))
+                } catch (error) {
+                    logger.error('capture_value_css_selector_allowlist threw', error)
+                }
                 if (captureValue) {
                     props['$input_value'] = target.value
                 }
